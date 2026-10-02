@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Monitor T430
+Comment=Temperaturas e ventoinha do ThinkPad T430
+TryExec=python3
+Exec=python3 /opt/t430-monitor/t430_monitor.py
+Icon=utilities-system-monitor
+Terminal=false
+Categories=System;Monitor;

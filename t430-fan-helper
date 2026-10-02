@@ -1,0 +1,35 @@
+#!/usr/bin/python3
+"""Narrow privileged helper: writes only supported ThinkPad fan levels."""
+import os
+import sys
+
+FAN = "/proc/acpi/ibm/fan"
+ALLOWED = {"auto", "1", "2", "3", "4", "5", "6", "7"}
+
+
+def main():
+    if os.geteuid() != 0:
+        print("Este helper precisa ser executado pelo pkexec.", file=sys.stderr)
+        return 1
+    if len(sys.argv) != 2 or sys.argv[1] not in ALLOWED:
+        print("Nível inválido. Use auto ou um nível de 1 a 7.", file=sys.stderr)
+        return 2
+    try:
+        with open("/sys/module/thinkpad_acpi/parameters/fan_control", encoding="ascii") as f:
+            enabled = f.read().strip()
+        if enabled != "Y":
+            print("O controle manual está desativado no módulo thinkpad_acpi (fan_control=N). Habilite-o conforme o README e reinicie.", file=sys.stderr)
+            return 3
+        if not os.path.exists(FAN):
+            print("Interface de ventoinha do ThinkPad não encontrada.", file=sys.stderr)
+            return 4
+        with open(FAN, "w", encoding="ascii") as f:
+            f.write(f"level {sys.argv[1]}\n")
+    except OSError as e:
+        print(str(e), file=sys.stderr)
+        return 5
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
